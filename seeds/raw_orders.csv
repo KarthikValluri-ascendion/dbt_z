@@ -1,0 +1,13 @@
+order_id,customer_id,order_date,status,shipping_method,promo_code,discount_pct
+O001,C001,2023-11-15,completed,standard,,0
+O002,C001,2023-12-01,completed,express,SAVE10,10
+O003,C002,2023-10-20,completed,standard,,0
+O004,C003,2023-11-28,shipped,standard,SAVE5,5
+O005,C004,2023-12-05,completed,express,,0
+O006,C004,2023-12-10,processing,overnight,VIPFREE,0
+O007,C005,2023-09-15,returned,standard,,0
+O008,C006,2023-11-01,completed,standard,,0
+O009,C007,2023-12-08,completed,express,SAVE10,10
+O010,C008,2023-12-12,shipped,standard,,0
+O011,C009,2023-11-20,completed,standard,,0
+O012,C010,2023-10-05,cancelled,standard,,0

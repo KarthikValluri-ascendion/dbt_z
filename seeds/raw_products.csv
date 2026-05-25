@@ -1,0 +1,11 @@
+product_id,product_name,category,subcategory,cost_price,list_price,supplier_id,is_active,launch_date
+P001,Laptop Pro 15",Electronics,Computers,800.00,1299.99,S001,true,2021-06-01
+P002,Wireless Mouse,Electronics,Accessories,12.00,29.99,S001,true,2021-06-01
+P003,USB-C Hub 7-in-1,Electronics,Accessories,18.00,49.99,S001,true,2022-01-15
+P004,Standing Desk,Furniture,Office,150.00,449.99,S002,true,2021-09-01
+P005,Ergonomic Chair,Furniture,Office,200.00,549.99,S002,true,2021-09-01
+P006,Blue Light Glasses,Accessories,Eyewear,8.00,39.99,S003,true,2022-03-10
+P007,Noise Cancel Headphones,Electronics,Audio,80.00,199.99,S001,true,2021-12-01
+P008,Mechanical Keyboard,Electronics,Accessories,45.00,129.99,S001,true,2022-06-15
+P009,Monitor 27" 4K,Electronics,Displays,220.00,599.99,S001,false,2021-04-01
+P010,Webcam 1080p,Electronics,Accessories,25.00,79.99,S001,true,2022-02-28

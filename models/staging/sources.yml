@@ -1,0 +1,81 @@
+version: 2
+
+sources:
+  - name: raw
+    database: DBT_DEMO
+    schema: RAW
+    description: "Raw ingestion layer — all columns arrive as VARCHAR strings"
+    loaded_at_field: _loaded_at
+    freshness:
+      warn_after: {count: 12, period: hour}
+      error_after: {count: 24, period: hour}
+
+    tables:
+      - name: customers
+        description: "Customer master data from CRM"
+        columns:
+          - name: customer_id
+            description: "Unique customer identifier"
+            tests: [not_null, unique]
+          - name: email
+            tests: [not_null]
+          - name: customer_tier
+            tests:
+              - accepted_values:
+                  values: ['GOLD', 'SILVER', 'BRONZE']
+
+      - name: orders
+        description: "Order header records from OMS"
+        columns:
+          - name: order_id
+            tests: [not_null, unique]
+          - name: customer_id
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'customers')
+                  field: customer_id
+          - name: status
+            tests:
+              - accepted_values:
+                  values: ['completed','shipped','processing','returned','cancelled']
+
+      - name: order_items
+        description: "Order line items"
+        columns:
+          - name: order_item_id
+            tests: [not_null, unique]
+          - name: order_id
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'orders')
+                  field: order_id
+          - name: product_id
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'products')
+                  field: product_id
+
+      - name: products
+        description: "Product catalog"
+        columns:
+          - name: product_id
+            tests: [not_null, unique]
+
+      - name: payments
+        description: "Payment transactions"
+        columns:
+          - name: payment_id
+            tests: [not_null, unique]
+          - name: order_id
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'orders')
+                  field: order_id
+          - name: payment_status
+            tests:
+              - accepted_values:
+                  values: ['completed','pending','refunded','failed']

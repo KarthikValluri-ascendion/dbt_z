@@ -1,0 +1,47 @@
+# profiles.yml — place this in ~/.dbt/ or reference with --profiles-dir flag
+# NEVER commit credentials — use environment variables in production
+
+dbt_ecommerce:
+  target: dev
+  outputs:
+
+    dev:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"          # e.g. xy12345.us-east-1
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      role: DBT_ROLE
+      database: DBT_DEMO
+      warehouse: DBT_WH
+      schema: staging
+      threads: 4
+      client_session_keep_alive: False
+      query_tag: dbt_dev
+
+    ci:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      private_key_path: "{{ env_var('SNOWFLAKE_PRIVATE_KEY_PATH') }}"
+      private_key_passphrase: "{{ env_var('SNOWFLAKE_PRIVATE_KEY_PASSPHRASE', '') }}"
+      role: DBT_ROLE
+      database: DBT_DEMO
+      warehouse: DBT_WH
+      schema: staging
+      threads: 8
+      client_session_keep_alive: False
+      query_tag: dbt_ci
+
+    prod:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      private_key_path: "{{ env_var('SNOWFLAKE_PRIVATE_KEY_PATH') }}"
+      private_key_passphrase: "{{ env_var('SNOWFLAKE_PRIVATE_KEY_PASSPHRASE', '') }}"
+      role: DBT_ROLE
+      database: DBT_DEMO
+      warehouse: DBT_WH
+      schema: staging
+      threads: 16
+      client_session_keep_alive: False
+      query_tag: dbt_prod

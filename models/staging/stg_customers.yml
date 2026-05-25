@@ -1,0 +1,165 @@
+version: 2
+
+models:
+  - name: stg_customers
+    description: >
+      Cleaned and typed customer records. Applies basic email-format validation
+      and casts raw VARCHAR columns. One row per customer.
+
+    columns:
+      - name: customer_id
+        description: "Surrogate-safe natural key from source CRM"
+        tests:
+          - not_null
+          - unique
+
+      - name: email
+        description: "Lowercased, trimmed email address"
+        tests:
+          - not_null
+          - unique
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: '^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$'
+
+      - name: customer_tier
+        tests:
+          - accepted_values:
+              values: ['GOLD', 'SILVER', 'BRONZE']
+
+      - name: is_active
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true, false]
+
+      - name: signup_date
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: "'2020-01-01'::DATE"
+              max_value: "CURRENT_DATE()"
+
+      - name: country_code
+        tests:
+          - accepted_values:
+              values: ['USA', 'CAN', 'GBR', 'AUS']
+              quote: true
+
+  - name: stg_orders
+    description: >
+      Cleaned order headers with standardized status values and discount flags.
+      One row per order.
+
+    columns:
+      - name: order_id
+        tests: [not_null, unique]
+
+      - name: customer_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_customers')
+              field: customer_id
+
+      - name: order_status
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['completed','shipped','processing','returned','cancelled']
+
+      - name: shipping_method
+        tests:
+          - accepted_values:
+              values: ['standard','express','overnight']
+
+      - name: discount_pct
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100
+
+      - name: is_discounted
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true, false]
+
+  - name: stg_order_items
+    description: >
+      Cleaned order line items with computed gross/net amounts.
+      One row per order-item.
+
+    columns:
+      - name: order_item_id
+        tests: [not_null, unique]
+
+      - name: order_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_orders')
+              field: order_id
+
+      - name: product_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_products')
+              field: product_id
+
+      - name: quantity
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 1
+              max_value: 10000
+
+      - name: unit_price
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0.01
+              max_value: 999999.99
+
+      - name: gross_amount
+        description: "quantity * unit_price before discounts"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+      - name: net_amount
+        description: "gross_amount - discount_amt; must be <= gross_amount"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+  - name: stg_products
+    description: "Cleaned product catalog with margin computations"
+    columns:
+      - name: product_id
+        tests: [not_null, unique]
+      - name: list_price
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0.01
+      - name: gross_margin_pct
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100
+
+  - name: stg_payments
+    description: "Cleaned payment records with success flag"
+    columns:
+      - name: payment_id
+        tests: [not_null, unique]
+      - name: payment_status
+        tests:
+          - accepted_values:
+              values: ['completed','pending','refunded','failed']
+      - name: payment_amount
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
