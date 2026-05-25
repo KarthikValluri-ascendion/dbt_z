@@ -1,0 +1,10 @@
+# Claude DBT Test Generator — Python dependencies
+# Install: pip install -r requirements.txt
+#
+# Python 3.9+ required
+
+anthropic>=0.40.0          # Claude API — includes prompt caching support
+pyyaml>=6.0.1              # Parse dbt YAML schema files
+click>=8.1.7               # CLI flags (--model, --all, --dry-run, etc.)
+rich>=13.7.0               # Pretty terminal output (progress spinner, tables)
+python-dotenv>=1.0.0       # Load .env file for secrets

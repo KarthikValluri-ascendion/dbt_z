@@ -1,0 +1,89 @@
+What Was Built
+
+Project Structure at a Glance
+
+dbt_projects/
+├── snowflake_setup/          ← Run this FIRST in Snowflake
+├── current_state/            ← Your full DBT project (manual tests)
+│   ├── seeds/                ← 5 CSV datasets (customers, orders, items, products, payments)
+│   ├── models/staging/       ← stg_customers/orders/order_items/products/payments
+│   ├── models/intermediate/  ← int_order_enriched (joins + aggregations)
+│   ├── models/marts/         ← fct_orders (incremental) + dim_customers
+│   └── tests/
+│       ├── unit/             ← 4 hand-written unit tests (dbt_unit_testing mock pattern)
+│       └── functional/       ← 4 cross-model business rule tests
+└── future_state/
+    ├── auto_test_generator/  ← Python CLI using Claude claude-sonnet-4-6
+    └── generated_tests/      ← Sample of Claude's actual output (pre-run)
+
+---
+🔴 Current State (The Problem)
+
+┌───────────────────────────────────────┬──────────────┐
+│        What you write manually        │  Time cost   │
+├───────────────────────────────────────┼──────────────┤
+│ Schema YAML (not_null, unique, enums) │ 30 min/model │
+├───────────────────────────────────────┼──────────────┤
+│ Unit tests with mock data             │ 90 min/model │
+├───────────────────────────────────────┼──────────────┤
+│ Functional cross-model tests          │ 60 min/model │
+├───────────────────────────────────────┼──────────────┤
+│ Total per model                       │ 3 hours      │
+└───────────────────────────────────────┴──────────────┘
+
+See current_state/tests/unit/unit_test_fct_orders_revenue.sql — this is the multi-hour mock-data setup you write by hand for each model.
+
+---
+🟢 Future State (Claude Automation)
+
+Three Python modules doing the heavy lifting:
+
+┌──────────────────┬────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│       File       │                                                    Role                                                    │
+├──────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ dbt_analyzer.py  │ Scans your SQL + YAML → extracts columns, CTEs, CASE branches, business rules from comments                │
+├──────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ claude_client.py │ Calls Claude claude-sonnet-4-6 with prompt caching (system prompt cached = 90% discount on repeated calls) │
+├──────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ test_writer.py   │ Writes 3 artefacts per model + an ROI audit report                                                         │
+└──────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+Run it:
+cd future_state/auto_test_generator
+pip install -r requirements.txt
+cp .env.example .env   # add your ANTHROPIC_API_KEY
+
+# Single model (~30 seconds)
+python main.py --model stg_orders
+
+# Whole project + ROI summary
+python main.py --all
+
+---
+📊 The ROI Slide (future_state/generated_tests/session_summary.md)
+
+┌────────────────────────────────────┬───────────────────────────────┐
+│               Metric               │             Value             │
+├────────────────────────────────────┼───────────────────────────────┤
+│ 8-model project — manual           │ 24 hours                      │
+├────────────────────────────────────┼───────────────────────────────┤
+│ 8-model project — Claude           │ 3 minutes                     │
+├────────────────────────────────────┼───────────────────────────────┤
+│ Claude API cost (all 8 models)     │ $0.52                         │
+├────────────────────────────────────┼───────────────────────────────┤
+│ Engineer cost avoided (@ $80/hr)   │ $1,920                        │
+├────────────────────────────────────┼───────────────────────────────┤
+│ ROI ratio                          │ 3,692x                        │
+├────────────────────────────────────┼───────────────────────────────┤
+│ Annual (50-model project, 2×/week) │ ~$1.2M saved vs $338 API cost │
+└────────────────────────────────────┴───────────────────────────────┘
+
+---
+▶️ To Demo to Leadership — Steps in Order
+
+1. Run snowflake_setup/01_snowflake_setup.sql in Snowflake
+2. Run dbt seed && dbt run && dbt test → show green/red tests
+3. Open tests/unit/unit_test_fct_orders_revenue.sql → "this is what we write manually, 90+ min each"
+4. Run python main.py --model stg_orders → watch it generate in 30 sec
+5. Open generated_tests/stg_orders/ → show the 3 files + cost report
+6. Show generated_tests/session_summary.md → the leadership ROI table
