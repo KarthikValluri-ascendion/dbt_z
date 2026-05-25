@@ -1,0 +1,13 @@
+payment_id,order_id,payment_method,payment_status,amount,payment_date
+PAY001,O001,credit_card,completed,1359.97,2023-11-15
+PAY002,O002,paypal,completed,296.98,2023-12-01
+PAY003,O003,credit_card,completed,999.98,2023-10-20
+PAY004,O004,debit_card,completed,199.96,2023-11-28
+PAY005,O005,credit_card,completed,1199.98,2023-12-05
+PAY006,O006,credit_card,pending,1399.97,2023-12-10
+PAY007,O007,credit_card,refunded,29.99,2023-09-15
+PAY008,O008,paypal,completed,129.99,2023-11-01
+PAY009,O009,credit_card,completed,359.98,2023-12-08
+PAY010,O010,debit_card,completed,449.99,2023-12-12
+PAY011,O011,credit_card,completed,159.98,2023-11-20
+PAY012,O012,credit_card,failed,1299.99,2023-10-05

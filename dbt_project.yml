@@ -1,0 +1,94 @@
+name: 'dbt_ecommerce'
+version: '1.0.0'
+config-version: 2
+
+# This project uses Snowflake as the warehouse
+profile: 'dbt_ecommerce'
+
+# Model paths
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# -------------------------------------------------------------------------
+# Model configurations by layer
+# -------------------------------------------------------------------------
+models:
+  dbt_ecommerce:
+
+    staging:
+      +schema: staging
+      +materialized: view
+      +tags: ['staging']
+
+    intermediate:
+      +schema: intermediate
+      +materialized: ephemeral
+      +tags: ['intermediate']
+
+    marts:
+      +schema: marts
+      +materialized: table
+      +tags: ['marts']
+      fct_orders:
+        +materialized: incremental
+        +unique_key: order_id
+        +incremental_strategy: merge
+      fct_order_items:
+        +materialized: incremental
+        +unique_key: order_item_id
+        +incremental_strategy: merge
+
+# -------------------------------------------------------------------------
+# Seed configurations
+# -------------------------------------------------------------------------
+seeds:
+  dbt_ecommerce:
+    +schema: seeds
+    raw_customers:
+      +column_types:
+        customer_id: varchar(50)
+        signup_date: date
+    raw_orders:
+      +column_types:
+        order_id: varchar(50)
+        order_date: date
+        discount_pct: number(5,2)
+    raw_order_items:
+      +column_types:
+        unit_price: number(10,2)
+        discount_amt: number(10,2)
+    raw_products:
+      +column_types:
+        cost_price: number(10,2)
+        list_price: number(10,2)
+    raw_payments:
+      +column_types:
+        amount: number(10,2)
+        payment_date: date
+
+# -------------------------------------------------------------------------
+# Snapshot configurations
+# -------------------------------------------------------------------------
+snapshots:
+  dbt_ecommerce:
+    +target_schema: snapshots
+    +strategy: timestamp
+    +updated_at: _loaded_at
+
+# -------------------------------------------------------------------------
+# Variables
+# -------------------------------------------------------------------------
+vars:
+  # Date filter for incremental loads
+  start_date: '2023-01-01'
+  # Environment flag
+  env: 'dev'
