@@ -55,4 +55,4 @@ Writing these tests manually would require:
 - Writing functional tests with business-rule assertions: 30 min
 - Peer review and debugging: 15 min
 
-**Total manual: ~3 hours | Claude: 28 seconds | Savings: 99.7%**
+**Total manual: ~3 hours, 3*40$=120$ | Claude: 28 seconds,0.06$ | Time Savings: 99.7% | Cost Savings: 99.95%**
